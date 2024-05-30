@@ -1,1 +1,1 @@
-# MyBlog
+MyBlog project is an Express server application designed to run on port 3000, facilitating a platform where users can explore and share blog posts. This application leverages Express.js for server-side operations, providing a lightweight and efficient way to manage web requests and responses.
