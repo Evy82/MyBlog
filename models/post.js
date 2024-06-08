@@ -7,15 +7,15 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 const blogPostSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true
+    required: [true, 'Title is required']
   },
   author: {
     type: String,
-    required: true
+    required: [true, 'Author is required']
   },
   body: {
     type: String,
-    required: true
+    required: [true, 'Body text is required']
   },
   comments: [{
     body: String,
@@ -35,6 +35,23 @@ const blogPostSchema = new mongoose.Schema({
   }
 });
 
+blogPostSchema.post('save', function(error, doc, next) {
+  if (error.name === 'MongoError' && error.code === 11000) {
+    next(new Error('There was a duplicate key error'));
+  } else if (error) {
+    next(new Error('An error occurred during the save operation'));
+  } else {
+    next();
+  }
+});
+
 const BlogPost = mongoose.model('BlogPost', blogPostSchema);
 
 module.exports = BlogPost;
+
+const newBlogPost = new BlogPost({
+});
+
+newBlogItPost.save()
+  .then(doc => console.log('Blog post saved:', doc))
+  .catch(err => console.error('Error saving the blog post:', err));
