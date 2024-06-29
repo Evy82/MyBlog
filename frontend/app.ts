@@ -7,31 +7,30 @@ interface BlogPost {
 }
 
 const App: React.FC = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    const API_URL: string = "https://example.com/api/posts";
+    const BLOG_POSTS_API_URL = "https://example.com/api/posts";
 
-    const fetchPosts = async () => {
+    const fetchBlogPosts = async () => {
       try {
-        const response = await fetch(APIActionURL);
-        const data = await response.json();
-
-        setPosts(data);
+        const response = await fetch(BLOG_POSTS_API_URL);
+        const postsData = await response.json();
+        setBlogPosts(postsData);
       } catch (error) {
-        console.error("Error fetching posts:", error);
+        console.error("Error fetching blog posts:", error);
       }
     };
 
-    fetchPosts();
+    fetchBlogPosts();
   }, []);
 
   return (
     <div>
       <h1>Blog Posts</h1>
-      {posts.length > 0 ? (
+      {blogPosts.length > 0 ? (
         <ul>
-          {posts.map(post => (
+          {blogPosts.map(post => (
             <li key={post.id}>
               <h2>{post.title}</h2>
               <p>{post.content}</p>
