@@ -9,73 +9,72 @@ interface BlogPost {
 
 interface ErrorState {
   message: string;
-  isError: boolean;
+  isError: booln;
 }
 
 const BlogPosts: React.FC = () => {
-  const [posts, setPosts] = useState<BlogPLost[]>([]);
-  const [error, setError] = useState<ErrorStatus>({ message: '', isError: false });
-  const [loading, setLoading] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [postsPerPage] = useState<number>(5); // can be adjusted based on your preference
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [fetchError, setFetchError] = useState<ErrorState>({ message: '', isError: false });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [currentPageNumber, setCurrentPageNumber] = useState<number>(1);
+  const [postsPerPage] = useState<number>(5);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
+    const fetchBlogPosts = async () => {
+      setIsLoading(true);
       try {
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/posts`);
-        setPosts(response.data);
-        if (error.isError) setError({ message: '', isError: false });
-      } catch (err) {
-        handleAxiosError(err);
+        setBlogPosts(response.data);
+        if (fetchError.isError) setFetchError({ message: '', isError: false });
+      } catch (error) {
+        handleFetchError(error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    fetchPosts();
-  }, [error.isError, currentPage]);
+    fetchBlogPosts();
+  }, [fetchError.isError, currentPageNumber]);
 
-  const handleAxiosError = (err: unknown) => {
+  const handleFetchError = (error: unknown) => {
     let errorMessage = "An unexpected error occurred.";
-    if (axios.isAxiosError(err)) {
-      errorMessage = err.response ? `Server responded with a status code of ${err.response.status}` : err.request ? "The request was made but no response was received" : err.message;
+    if (axios.isAxiosError(error)) {
+      errorMessage = error.response ? `Server responded with status code ${error.response.status}` : error.request ? "The request was made but no response was received" : error.message;
     }
-    console.error(errorMessage, err);
-    setError({ message: errorMessage, isError: true });
+    console.error(errorMessage, error);
+    setFetchError({ message: errorMessage, isError: true });
   };
 
-  // Pagination logic
-  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfLastPost = currentPageNumber * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+  const displayedPosts = blogPosts.slice(indexOfFirstPost, indexOfLastPost);
 
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  const changePage = (pageNumber: number) => setCurrentPageNumber(pageNumber);
 
   return (
     <div>
       <h2>Blog Posts</h2>
-      {loading ? (
+      {isLoading ? (
         <p>Loading...</p>
-      ) : error.isError ? (
-        <p style={{ color: 'red' }}>Error: {error.message}</p>
+      ) : fetchError.isError ? (
+        <p style={{ color: 'red' }}>Error: {fetchError.message}</p>
       ) : (
         <>
           <ul>
-            {currentPosts.map((post) => (
+            {displayedPosts.map((post) => (
               <li key={post.id}>
                 <h3>{post.title}</h3>
                 <p>{post.body}</p>
               </li>
             ))}
           </ul>
-          <div>
-            {Array.from({ length: Math.ceil(posts.length / postsPerPage) }, (_, index) => (
-              <button key={index + 1} onClick={() => paginate(index + 1)}>
+          <nav>
+            {Array.from({ length: Math.ceil(blogPosts.length / postsPerPage) }, (_, index) => (
+              <button key={index + 1} onClick={() => changePage(index + 1)}>
                 {index + 1}
               </button>
             ))}
-          </div>
-          <button onClick={() => setCurrentPage(1)}>Refresh Posts</button>
+          </nav>
+          <button onClick={() => setCurrentPageNumber(1)}>Refresh Posts</button>
         </>
       )}
     </div>
