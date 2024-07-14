@@ -12,17 +12,39 @@ const AddBlogPost: React.FC = () => {
     content: '',
     author: '',
   });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEditEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      content: '',
+      author: '',
+    });
+  };
+
+  const validateForm = (): boolean => {
+    if (!formData.title.trim() || !formData.content.trim() || !formData.author.trim()) {
+      setError('All fields are required.');
+      return false;
+    }
+    setError(null); // Clear any previous errors
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!validateForm()) return;
+
+    setIsLoading(true); // Start loading
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/posts`, {
         method: 'POST',
@@ -36,21 +58,19 @@ const AddBlogPost: React.FC = () => {
         throw new Error('Something went wrong!');
       }
 
-      setFormData({
-        title: '',
-        content: '',
-        author: '',
-      });
-      
+      resetForm();
       alert('Blog post added successfully!');
     } catch (error) {
-      alert('Failed to add blog post. Please try again.');
+      setError('Failed to add blog post. Please try again.');
       console.error(error);
+    } finally {
+      setIsLoading(false); // End loading
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
       <div>
         <label htmlFor="title">Title</label>
         <input
@@ -80,7 +100,9 @@ const AddBlogPost: React.FC = () => {
           onChange={handleInputChange}
         />
       </div>
-      <button type="submit">Add Post</button>
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Adding...' : 'Add Post'}
+      </button>
     </form>
   );
 };
