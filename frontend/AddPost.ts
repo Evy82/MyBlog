@@ -15,7 +15,13 @@ const AddBlogPost: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEditEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const logOutput = (message: string) => {
+    console.log(message);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    logOutput(`Form field ${name} changed to: ${value}`);
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -33,6 +39,7 @@ const AddBlogPost: React.FC = () => {
   const validateForm = (): boolean => {
     if (!formData.title.trim() || !formData.content.trim() || !formData.author.trim()) {
       setError('All fields are required.');
+      logOutput('Form validation failed. All fields are required.');
       return false;
     }
     setError(null); // Clear any previous errors
@@ -44,6 +51,7 @@ const AddBlogPost: React.FC = () => {
 
     if (!validateForm()) return;
 
+    logOutput('Submitting form...');
     setIsLoading(true); // Start loading
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/posts`, {
@@ -58,10 +66,12 @@ const AddBlogPost: React.FC = () => {
         throw new Error('Something went wrong!');
       }
 
+      logOutput('Blog post added successfully!');
       resetForm();
       alert('Blog post added successfully!');
     } catch (error) {
       setError('Failed to add blog post. Please try again.');
+      logOutput('Failed to add blog determination.');
       console.error(error);
     } finally {
       setIsLoading(false); // End loading
