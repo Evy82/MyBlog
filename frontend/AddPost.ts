@@ -1,94 +1,94 @@
 import React, { useState } from 'react';
 
-interface BlogPostFormData {
+interface BlogPost {
   title: string;
   content: string;
   author: string;
 }
 
-const AddBlogPost: React.FC = () => {
-  const [formData, setFormData] = useState<BlogPostFormData>({
+const AddBlogPostForm: React.FC = () => {
+  const [blogPost, setBlogPost] = useState<BlogPost>({
     title: '',
     content: '',
     author: '',
   });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
-  const logOutput = (message: string) => {
+  const debugLog = (message: string) => {
     console.log(message);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    logOutput(`Form field ${name} changed to: ${value}`);
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+    debugLog(`Form field ${name} changed to: ${value}`);
+    setBlogPost({
+      ...blogPost,
+      [name]: value,
     });
   };
 
-  const resetForm = () => {
-    setFormData({
+  const clearForm = () => {
+    setBlogPost({
       title: '',
       content: '',
       author: '',
     });
   };
 
-  const validateForm = (): boolean => {
-    if (!formData.title.trim() || !formData.content.trim() || !formData.author.trim()) {
-      setError('All fields are required.');
-      logOutput('Form validation failed. All fields are required.');
+  const isFormValid = (): boolean => {
+    if (!blogPost.title.trim() || !blogPost.content.trim() || !blogPost.author.trim()) {
+      setFormError('All fields are required.');
+      debugLog('Form validation failed. All fields are required.');
       return false;
     }
-    setError(null); // Clear any previous errors
+    setFormError(null); // Clear any previous errors
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (!isFormValid()) return;
 
-    logOutput('Submitting form...');
-    setIsLoading(true); // Start loading
+    debugLog('Submitting form...');
+    setIsSubmitting(true); // Start loading
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(blogPost),
       });
 
       if (!response.ok) {
         throw new Error('Something went wrong!');
       }
 
-      logOutput('Blog post added successfully!');
-      resetForm();
+      debugLog('Blog post added successfully!');
+      clearForm();
       alert('Blog post added successfully!');
     } catch (error) {
-      setError('Failed to add blog post. Please try again.');
-      logOutput('Failed to add blog determination.');
-      console.error(error);
+        setFormError('Failed to add blog post. Please try again.');
+        debugLoading('Failed to add blog post.');
+        console.error(error);
     } finally {
-      setIsLoading(false); // End loading
+      setIsSubmitting(false); // End loading
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+    <form onSubmit={handleFormSubmit}>
+      {formError && <div style={{ color: 'red' }}>{formError}</div>}
       <div>
         <label htmlFor="title">Title</label>
         <input
           type="text"
           id="title"
           name="title"
-          value={formData.title}
-          onChange={handleInputChange}
+          value={blogPost.title}
+          onChange={handleFieldChange}
         />
       </div>
       <div>
@@ -96,8 +96,8 @@ const AddBlogPost: React.FC = () => {
         <textarea
           id="content"
           name="content"
-          value={formData.content}
-          onChange={handleInputChange}
+          value={blogPost.content}
+          onChange={handleFieldChange}
         />
       </div>
       <div>
@@ -106,15 +106,15 @@ const AddBlogPost: React.FC = () => {
           type="text"
           id="author"
           name="author"
-          value={formData.author}
-          onChange={handleInputChange}
+          value={blogItem.author}
+          onChange={handleFieldChange}
         />
       </div>
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Adding...' : 'Add Post'}
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Adding...' : 'Add Post'}
       </button>
     </form>
   );
 };
 
-export default AddBlogPost;
+export default AddBlogPostForm;
