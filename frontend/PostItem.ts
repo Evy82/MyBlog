@@ -1,35 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import BlogPost from './BlogPost'; // Import your BlogPost component
+import { batchFetchPostsDetails, updatePost, deletePost } from './api'; // Hypothetical API utilities
 
-interface BlogPostProps {
-  id: string;
-  title: string;
-  content: string;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onView: (id: string) => void;
-}
+const BlogPostsContainer: React.FC = () => {
+  const [posts, setPosts] = useState([]);
 
-const BlogPost: React.FC<BlogPostProps> = ({
-  id,
-  title,
-  content,
-  onEdit,
-  onDelete,
-  onView,
-}) => {
-  const handleAction = (action: (id: string) => void) => () => action(id);
+  useEffect(() => {
+    const initPosts = async () => {
+      const postsIds = ['1', '2', '3']; // Example of post IDs you might be fetching in bulk
+      const fetchedPostsDetails = await batchFetchPostsDetails(postsIds);
+      setPosts(fetchedPostsDetails);
+    };
+
+    initPosts();
+  }, []);
+
+  const handleEdit = async (postId: string) => {
+    const updatedPost = await updatePost(postId);
+    // Update the local state to reflect the change
+  };
+
+  const handleDelete = async (postId: string) => {
+    await deletePost(postId);
+    // Update the local state to remove the deleted post
+  };
+
+  const handleView = (postId: string) => {
+    // Implementation for viewing a post
+  };
 
   return (
-    <div className="blogPost">
-      <h2>{title}</h2>
-      <p>{content}</p>
-      <div className="actions">
-        <button onClick={handleAction(onView)}>View</button>
-        <button onClick={handleFlag(onEdit)}>Edit</button>
-        <button onClick={handleAction(onDelete)}>Delete</button>
-      </div>
+    <div>
+      {posts.map((post) => (
+        <BlogPost
+          key={post.id}
+          id={post.id}
+          title={post.title}
+          content={post.content}
+          onEdit={() => handleEdit(post.id)}
+          onDelete={() => handleDelete(post.id)}
+          onView={() => handleView(post.id)}
+        />
+      ))}
     </div>
   );
 };
 
-export default BlogPost;
+export default BlogPostsContainer;
